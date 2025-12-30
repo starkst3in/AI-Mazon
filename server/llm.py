@@ -42,6 +42,7 @@ class GeminiSummarizer:
                 "pros": ["Pro 1", "Pro 2"],
                 "cons": ["Con 1", "Con 2"]
             }},
+            "review_summary": "A concise summary of user sentiment and common feedback from the reviews provided.",
             "verdict": "A one sentence buying recommendation."
         }}
         """
@@ -60,7 +61,10 @@ class GeminiSummarizer:
             if text.endswith("```"):
                 text = text[:-3]
             
-            return json.loads(text.strip())
+            result = json.loads(text.strip())
+            # Inject images back into response so frontend can use them
+            result['images'] = product_data.get('images', [])
+            return result
 
         except Exception as e:
             print(f"Gemini Error: {e}")

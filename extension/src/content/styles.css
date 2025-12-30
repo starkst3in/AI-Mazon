@@ -100,6 +100,72 @@
     color: #c40000;
 }
 
+/* Carousel */
+.ai-mazon-carousel {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.ai-mazon-carousel img {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+.ai-mazon-carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.3);
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    font-size: 18px;
+    z-index: 2;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ai-mazon-carousel-btn:hover {
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.ai-mazon-carousel-btn.prev {
+    left: 10px;
+}
+
+.ai-mazon-carousel-btn.next {
+    right: 10px;
+}
+
+/* Review Summary */
+.ai-mazon-review-summary {
+    background-color: #f7fafa;
+    border: 1px solid #e3e3e3;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+.ai-mazon-review-title {
+    font-weight: bold;
+    color: #c45500;
+    margin-bottom: 5px;
+    display: block;
+}
+
 @keyframes fadeIn {
     from {
         opacity: 0;

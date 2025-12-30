@@ -1,8 +1,6 @@
 // CSS is injected via manifest.json
 
-
 let activePlusButton = null;
-let currentTargetUrl = null;
 
 // Helper to check if extension is enabled
 function isExtensionEnabled(callback) {
@@ -16,53 +14,35 @@ document.addEventListener('mouseover', (event) => {
         if (!enabled) return;
 
         // Simplified logic: finding common product card containers or links
-        // Amazon selectors are notoriously messy. We'll look for <a> tags with hrefs containing /dp/ or /gp/product/
         const target = event.target;
         const link = target.closest('a');
 
-        if (link && (link.href.includes('/dp/') || link.href.includes('/gp/product/'))) {
-            // Check if we are already showing a button for this link
-            if (activePlusButton && activePlusButton.dataset.url === link.href) return;
+        if (link) {
+            const href = link.href;
+            // Check for standard product link OR sponsored link (/sspa/)
+            if (href.includes('/dp/') || href.includes('/gp/product/') || href.includes('/sspa/')) {
+                // Check if we are already showing a button for this link
+                if (activePlusButton && activePlusButton.dataset.url === link.href) return;
 
-            // Remove existing button if it's on a different element
-            removePlusButton();
+                // Remove existing button if it's on a different element
+                removePlusButton();
 
-            createPlusButton(link);
+                createPlusButton(link);
+            }
         }
     });
 });
 
-// We might want to remove the button if we mouse out of the card, 
-// BUT the user said: "Once it appears, it should not disappear even if the cursor is out of the product card"
-// So standard behavior is: it stays until we hover another product? 
-// Or it accumulates? "Once it appears, it should not disappear".
-// However, too many buttons would clutter. Let's make it disappear if we hover a DIFFERENT product, 
-// but stay if we just move mouse away to empty space?
-// Actually simpler: Let's attach it to the card.
 
 function createPlusButton(linkElement) {
-    // Find a relatively positioned parent or the card container
-    // This is tricky on Amazon. Let's try to find a parent div that looks like a card.
-    // Fallback: Use the link element itself if it's block-level, or its parent.
-
     // Attempt to find a stable container
-    let container = linkElement.closest('.s-result-item') || linkElement.closest('.a-carousel-card') || linkElement.parentNode;
+    let container = linkElement.closest('.s-result-item') || linkElement.closest('.a-carousel-card') || linkElement.closest('.zg-item-immersion') || linkElement.parentNode;
 
-    // If container is inline, we might have positioning issues.
-    // Let's create the button and position it absolute relative to the container.
-    // Ensure container is relative
-
-    // Visual fix: Many amazon links are just text. We want the IMAGE or the main CARD.
-    // The user said "Amazon product card".
-
-    // Let's try to position it top-right of the container.
-    // To avoid messing up layout, we might just append it to body and use getBoundingClientRect, 
-    // but that drifts on scroll.
-    // Better to append to container and set container to relative (if not already).
-
-    if (getComputedStyle(container).position === 'static') {
+    if (container && getComputedStyle(container).position === 'static') {
         container.style.position = 'relative';
     }
+
+    if (!container) return;
 
     // Check if button already exists in this container
     if (container.querySelector('.ai-mazon-plus')) return;
@@ -80,19 +60,11 @@ function createPlusButton(linkElement) {
     });
 
     container.appendChild(btn);
-    activePlusButton = btn; // Track valid button
+    activePlusButton = btn;
 }
 
 function removePlusButton() {
-    // If we want single button behavior:
-    // if (activePlusButton) {
-    //    activePlusButton.remove();
-    //    activePlusButton = null;
-    // }
-
-    // User asked "Once it appears, it should not disappear even if the cursor is out".
-    // This implies persistent buttons for visited cards.
-    // So we DON'T remove.
+    // Persistent buttons as requested
 }
 
 function openSummary(url) {
@@ -127,31 +99,95 @@ function openSummary(url) {
         const body = modal.querySelector('.ai-mazon-body');
         if (response && response.summary) {
             const s = response.summary;
+            const images = response.summary.images || [];
 
             if (response.error) {
                 body.innerHTML = `<div style="color:red">Error: ${response.error}</div>`;
                 return;
             }
 
-            body.innerHTML = `
+            // Construct HTML
+            let contentHtml = '';
+
+            // Carousel Section
+            if (images.length > 0) {
+                const showControls = images.length > 1;
+                contentHtml += `
+                    <div class="ai-mazon-carousel">
+                        ${showControls ? `<button class="ai-mazon-carousel-btn prev" id="ai-mazon-prev">&lt;</button>` : ''}
+                        <img src="${images[0]}" id="ai-mazon-img" data-index="0">
+                        ${showControls ? `<button class="ai-mazon-carousel-btn next" id="ai-mazon-next">&gt;</button>` : ''}
+                        ${showControls ? `<div style="position:absolute; bottom:5px; right:10px; font-size:10px; color:#555; background:rgba(255,255,255,0.8); padding:2px 5px; border-radius:3px;">1 / ${images.length}</div>` : ''}
+                    </div>
+                `;
+            }
+
+            contentHtml += `
                 <h3>${s.product_name || "Product"}</h3>
                 <p><strong>Price:</strong> ${s.price || "N/A"}</p>
-                <p>${s.summary || "No summary available."}</p>
-                
-                ${s.pros_cons && s.pros_cons.pros && s.pros_cons.pros.length > 0 ? `
-                <p><strong>Pros:</strong></p>
+                <p style="margin-bottom: 15px;">${s.summary || "No summary available."}</p>
+            `;
+
+            // Review Summary
+            if (s.review_summary) {
+                contentHtml += `
+                    <div class="ai-mazon-review-summary">
+                        <span class="ai-mazon-review-title">Review Summary</span>
+                        ${s.review_summary}
+                    </div>
+                `;
+            }
+
+            if (s.pros_cons && s.pros_cons.pros && s.pros_cons.pros.length > 0) {
+                contentHtml += ` <p><strong>Pros:</strong></p>
                 <ul class="ai-mazon-pros">
                     ${s.pros_cons.pros.map(p => `<li>${p}</li>`).join('')}
-                </ul>` : ''}
+                </ul>`;
+            }
 
-                ${s.pros_cons && s.pros_cons.cons && s.pros_cons.cons.length > 0 ? `
-                <p><strong>Cons:</strong></p>
+            if (s.pros_cons && s.pros_cons.cons && s.pros_cons.cons.length > 0) {
+                contentHtml += ` <p><strong>Cons:</strong></p>
                 <ul class="ai-mazon-cons">
                     ${s.pros_cons.cons.map(c => `<li>${c}</li>`).join('')}
-                </ul>` : ''}
+                </ul>`;
+            }
 
-                <p><strong>Verdict:</strong> ${s.verdict || ""}</p>
-            `;
+            contentHtml += `<p style="margin-top: 15px;"><strong>Verdict:</strong> ${s.verdict || ""}</p>`;
+
+            body.innerHTML = contentHtml;
+
+            // Carousel Logic
+            if (images.length > 1) {
+                let idx = 0;
+                const imgEl = document.getElementById('ai-mazon-img');
+                const nextBtn = document.getElementById('ai-mazon-next');
+                const prevBtn = document.getElementById('ai-mazon-prev');
+
+                const updateImg = () => {
+                    if (imgEl) {
+                        imgEl.src = images[idx];
+                        imgEl.dataset.index = idx;
+                    }
+                };
+
+                if (nextBtn) {
+                    nextBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        idx = (idx + 1) % images.length;
+                        updateImg();
+                    };
+                }
+
+                if (prevBtn) {
+                    prevBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        idx = (idx - 1 + images.length) % images.length;
+                        updateImg();
+                    };
+                }
+            }
+
+
         } else {
             body.innerHTML = `<div style="color:red">Error: ${response ? response.error : "Unknown error"}</div>`;
         }

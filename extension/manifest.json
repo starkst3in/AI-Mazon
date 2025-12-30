@@ -1,0 +1,41 @@
+{
+    "name": "AI-Mazon",
+    "version": "1.0.0",
+    "description": "AI-powered Amazon Product Summarizer",
+    "permissions": [
+        "storage",
+        "activeTab",
+        "scripting"
+    ],
+    "host_permissions": [
+        "https://www.amazon.com/*",
+        "https://www.amazon.in/*"
+    ],
+    "background": {
+        "service_worker": "src/background/index.js"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "https://www.amazon.com/*",
+                "https://www.amazon.in/*"
+            ],
+            "js": [
+                "src/content/contentScript.js"
+            ],
+            "css": [
+                "src/content/styles.css"
+            ]
+        }
+    ],
+    "action": {
+        "default_icon": {
+            "16": "assets/ext-icon.png",
+            "24": "assets/ext-icon.png",
+            "32": "assets/ext-icon.png"
+        },
+        "default_title": "AI-Mazon",
+        "default_popup": "src/popup/index.html"
+    },
+    "manifest_version": 3
+}

@@ -1,0 +1,113 @@
+/* Plus Button */
+.ai-mazon-plus {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 30px;
+    height: 30px;
+    background-color: #ff9900;
+    /* Amazon Orange */
+    color: white;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 30px;
+    font-size: 24px;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    z-index: 9999;
+    transition: transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ai-mazon-plus:hover {
+    transform: scale(1.1);
+    background-color: #e68a00;
+}
+
+/* Summary Modal */
+.ai-mazon-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.ai-mazon-modal {
+    background: white;
+    width: 400px;
+    max-width: 90%;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.ai-mazon-header {
+    background: #232f3e;
+    /* Amazon Dark Blue */
+    color: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ai-mazon-header h2 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.ai-mazon-close {
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.ai-mazon-body {
+    padding: 20px;
+    max-height: 60vh;
+    overflow-y: auto;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #333;
+}
+
+.ai-mazon-body h3 {
+    margin-top: 0;
+    font-size: 16px;
+    color: #111;
+}
+
+.ai-mazon-loading {
+    text-align: center;
+    padding: 20px;
+}
+
+.ai-mazon-pros {
+    color: green;
+}
+
+.ai-mazon-cons {
+    color: #c40000;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
